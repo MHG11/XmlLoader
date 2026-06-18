@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importador XML</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; text-align: center; border: 1px solid #ccc; padding: 20px; border-radius: 5px; }
+        .form-group { margin-bottom: 15px; }
+        button { padding: 10px 15px; cursor: pointer; }
+        #message { margin-top: 15px; font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
+        .link-consulta { display: none; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Upload de Arquivo XML</h2>
+    <p>Selecione um arquivo XML contendo os dados de Clientes e Produtos.</p>
+
+    <div class="form-group">
+        <input type="file" id="fileInput" accept=".xml">
+    </div>
+
+    <button onclick="uploadFile()">Enviar XML</button>
+
+    <div id="message"></div>
+
+    <div id="linkConsulta" class="link-consulta">
+        <a href="consultar-dados.html">Ir para Consulta de Dados</a>
+    </div>
+</div>
+
+<script>
+    function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        const messageDiv = document.getElementById('message');
+        const linkConsulta = document.getElementById('linkConsulta');
+
+        if (!file) {
+            showMessage("Por favor, selecione um arquivo.", "error");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/xml/importar/tudo', {
+            method: 'POST',
+            body: formData
+        })
+        .then(async response => {
+            if (response.ok) {
+                return response.text();
+            }
+            const errorText = await response.text();
+            throw new Error(errorText || 'Falha no upload do arquivo');
+        })
+        .then(data => {
+            showMessage("Upload realizado com sucesso!", "success");
+            linkConsulta.style.display = "block";
+        })
+        .catch(error => {
+            showMessage(error.message, "error");
+            console.error(error);
+        });
+    }
+
+    function showMessage(text, type) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = text;
+        messageDiv.className = type;
+    }
+</script>
+
+</body>
+</html>
